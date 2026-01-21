@@ -1,7 +1,6 @@
-version: '3'
 services:
   postgres:
-    image: postgres
+    image: postgres:15
     ports:
       - "5432:5432"
     environment:
@@ -14,3 +13,16 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+  migrations:
+    image: ghcr.io/kukymbr/goose-docker:3.26.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - GOOSE_DRIVER=postgres
+      - GOOSE_DBSTRING=host=postgres port=5432 user=postgres password=test dbname=messenger sslmode=disable
+      - GOOSE_COMMAND=up
+      - GOOSE_MIGRATION_DIR=/migrations
+    volumes:  
+          - ./migrations:/migrations:ro
+    restart: "no"
