@@ -1,0 +1,16 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: messenger
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "messenger"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
