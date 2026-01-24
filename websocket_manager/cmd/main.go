@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -22,6 +21,7 @@ func main() {
 		panic("failed to init storage")
 	}
 	logger.Debug("storage connected")
+	defer storage.Close()
 	logger.Debug("starting websocket server")
 	hub := server.NewHub(ctx, storage, logger.With("component", "hub"))
 
@@ -33,6 +33,6 @@ func main() {
 	err = http.ListenAndServe(addr, nil)
 
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		logger.Error("failed to start server", "error", err)
 	}
 }

@@ -29,7 +29,7 @@ func UpdateToken(logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Authorization", "Bearer "+newToken)
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusCreated)
 		logger.Info("token created", "user_id", id)
 	}
 }

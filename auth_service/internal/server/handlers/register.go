@@ -17,7 +17,6 @@ type RegisterRequest struct {
 	Password string `json:"password"`
 }
 
-// TODO: rewrite error messages
 func Register(logger *slog.Logger, storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("register request received")
@@ -42,31 +41,31 @@ func Register(logger *slog.Logger, storage storage.Storage) http.HandlerFunc {
 		uow, err := storage.CreateUnitOfWork()
 		if err != nil {
 			logger.Error("failed to create unit of work", "error", err)
-			http.Error(w, "Error creating unit of work", http.StatusInternalServerError)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 		defer uow.Rollback()
 		if err = uow.UserRepository().Register(u); err != nil {
 			logger.Error("failed to register user", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "User already exists", http.StatusUnauthorized)
 			return
 		}
 		// create token
 		token, err := jwt.CreateToken(u.Id)
 		if err != nil {
 			logger.Error("failed to create token", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
 		if _, err = w.Write([]byte(fmt.Sprintf("{\"token\": \"%s\"}", token))); err != nil {
 			logger.Error("failed to write token to response", "error", err)
-			http.Error(w, "Error writing token to response", http.StatusInternalServerError)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 		if err = uow.Commit(); err != nil {
 			logger.Error("failed to commit registration", "error", err)
-			http.Error(w, "Error committing registration", http.StatusInternalServerError)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 		logger.Info("user registered successfully", "user_id", u.Id)

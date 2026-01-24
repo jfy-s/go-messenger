@@ -16,11 +16,12 @@ type Storage struct {
 func NewStorage(databaseUrl string, logger *slog.Logger) (*Storage, error) {
 	db, err := pgxpool.New(context.Background(), databaseUrl)
 	if err != nil {
+		logger.Error("failed connect to database", "error", err)
 		return nil, err
-
 	}
 
 	if err := db.Ping(context.Background()); err != nil {
+		logger.Error("failed connect to database", "error", err)
 		return nil, err
 	}
 	return &Storage{db: db, logger: logger}, err
