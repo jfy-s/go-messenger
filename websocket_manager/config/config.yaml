@@ -1,4 +1,0 @@
-hosthame: "localhost"
-port: 5252
-database_url: "postgres://postgres:test@localhost:5432/messenger"
-public_key_path: "C:\\Go study\\go-messenger\\keys\\public.pem"
