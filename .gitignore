@@ -1,4 +1,4 @@
-./keys
-./auth_service/config
-./websocket_manager/config
-./gateway/config
+/keys
+/auth_service/config
+/websocket_manager/config
+/gateway/config
