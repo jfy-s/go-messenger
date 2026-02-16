@@ -16,13 +16,14 @@ const (
 	AddUserToChat
 	DeleteUserFromChat
 	GetAllUsersIDInChat
+	GetAllUserChats
 )
 
 type MessagePacketRequest struct {
-	MsgType MsgType `json:"msgType"`
-	From    uint64  `json:"from,omitempty"`
-	To      uint64  `json:"to,omitempty"`
-	Data    string  `json:"data"`
+	MsgType MsgType         `json:"msgType"`
+	From    uint64          `json:"from,omitempty"`
+	To      uint64          `json:"to,omitempty"`
+	Data    json.RawMessage `json:"data"`
 }
 
 func ByteToMessagePacketRequest(b []byte) (*MessagePacketRequest, error) {

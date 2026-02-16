@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS chat (
+CREATE TABLE IF NOT EXISTS chats (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     creator_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS chat (
 );
 
 CREATE TABLE IF NOT EXISTS chat_users (
-    chat_id BIGINT NOT NULL REFERENCES chat(id) ON DELETE CASCADE,
+    chat_id BIGINT NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     PRIMARY KEY (chat_id, user_id)
 );
@@ -18,5 +18,5 @@ CREATE TABLE IF NOT EXISTS chat_users (
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE IF EXISTS chat_users;
-DROP TABLE IF EXISTS chat;
+DROP TABLE IF EXISTS chats;
 -- +goose StatementEnd

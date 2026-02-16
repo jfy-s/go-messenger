@@ -22,6 +22,7 @@ type ChatRepository interface {
 	DeleteUserFromChat(chatUsers *model.ChatUsers) error
 	GetAllUsersIDInChat(id uint64) ([]uint64, error)
 	GetOwnerID(id uint64) (uint64, error)
+	GetAllUserChats(id uint64) ([]model.Chat, error)
 }
 
 type MessageRepository interface {

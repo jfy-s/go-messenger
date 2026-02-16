@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"sync"
@@ -54,6 +55,7 @@ func (h *Hub) Register(session *session.Session) error {
 func (h *Hub) Unregister(session *session.Session) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	h.connections[session.ID()].Conn().Close()
 	delete(h.connections, session.ID())
 }
 
@@ -91,8 +93,11 @@ func (h *Hub) HandleMessage(msg *model.MessagePacketRequest) {
 	case model.GetAllUsersIDInChat:
 		ans := handlers.HandleGetLlUsersIDInChat(h.storage, msg, h.logger.With("handler", "get_all_users_id_in_chat", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
+	case model.GetAllUserChats:
+		ans := handlers.HandleGetAllUserChats(h.storage, msg, h.logger.With("handler", "get_all_user_chats", "from", msg.From))
+		h.connections[msg.From].Enqueue(ans)
 	default:
-		ans := &model.MessagePacketRequest{MsgType: model.SendMessage, From: 0, To: msg.From, Data: "Internal Error"}
+		ans := &model.MessagePacketRequest{MsgType: model.SendMessage, From: 0, To: msg.From, Data: json.RawMessage("Internal Error")}
 		h.connections[msg.From].Enqueue(ans)
 	}
 }
