@@ -58,7 +58,7 @@ func Login(logger *slog.Logger, storage storage.Storage) http.HandlerFunc {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		if _, err = w.Write([]byte(fmt.Sprintf("{\"token\": \"%s\"}", token))); err != nil {
+		if _, err = w.Write([]byte(fmt.Sprintf(`{"token": "%s", "id": %v}`, token, u.Id))); err != nil {
 			logger.Error("failed to write token to response", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}

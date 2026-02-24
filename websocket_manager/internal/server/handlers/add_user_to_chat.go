@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"log/slog"
-	"strconv"
 	"websocket_manager/internal/model"
 	"websocket_manager/internal/storage"
 
@@ -17,13 +16,8 @@ type AddUserToChatRequest struct {
 }
 
 func HandleAddUserToChat(storage storage.Storage, msgPacketRequest *model.MessagePacketRequest, logger *slog.Logger) *model.MessagePacketRequest {
-	var strId string
-	_ = json.Unmarshal(msgPacketRequest.Data, &strId)
-	userId, err := strconv.ParseUint(strId, 10, 64)
-	if err != nil {
-		logger.Error("failed to parse user id", "error", err)
-		return &model.MessagePacketRequest{MsgType: model.AddUserToChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Internal Error")}
-	}
+	var userId uint64
+	_ = json.Unmarshal(msgPacketRequest.Data, &userId)
 	req := AddUserToChatRequest{CreatorID: msgPacketRequest.From, ChatID: msgPacketRequest.To, UserID: userId}
 	validator := validator.New()
 	if err := validator.Struct(req); err != nil {

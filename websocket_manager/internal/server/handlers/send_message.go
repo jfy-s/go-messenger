@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"websocket_manager/internal/model"
 	"websocket_manager/internal/storage"
@@ -43,5 +44,5 @@ func HandleSendMessage(storage storage.Storage, msgPacketRequest *model.MessageP
 		return &model.MessagePacketRequest{MsgType: model.SendMessage, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Internal Error")}
 	}
 	logger.Info("message added", "id", msg.ID, "chat_id", msg.ChatID, "user_id", msg.UserID, "message", msg.Message)
-	return &model.MessagePacketRequest{MsgType: model.SendMessage, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Success")}
+	return &model.MessagePacketRequest{MsgType: model.SendMessage, From: msgPacketRequest.To, To: msgPacketRequest.From, Data: json.RawMessage(fmt.Sprintf(`"%s"`, message))}
 }
