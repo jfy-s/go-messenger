@@ -41,7 +41,7 @@ func (repo *MessageRepository) DeleteMessage(id uint64) error {
 }
 
 func (repo *MessageRepository) GetAllMessagesInChat(chatID uint64) ([]model.Message, error) {
-	rows, err := repo.tx.Query(context.Background(), "SELECT (id, user_id, message, created_at, updated_at) FROM messages WHERE chat_id = $1", chatID)
+	rows, err := repo.tx.Query(context.Background(), "SELECT id, user_id, message, created_at, updated_at FROM messages WHERE chat_id = $1", chatID)
 	if err != nil {
 		repo.logger.Error("failed to get all messages in chat", "error", err)
 	}
@@ -51,6 +51,7 @@ func (repo *MessageRepository) GetAllMessagesInChat(chatID uint64) ([]model.Mess
 		msg := model.Message{ChatID: chatID}
 		if err := rows.Scan(&msg.ID, &msg.UserID, &msg.Message, &msg.CreatedAt, &msg.UpdatedAt); err != nil {
 			repo.logger.Error("failed to scan message", "error", err)
+			return nil, err
 		}
 		msgs = append(msgs, msg)
 	}

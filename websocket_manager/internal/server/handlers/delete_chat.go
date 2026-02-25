@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"log/slog"
 	"websocket_manager/internal/model"
 	"websocket_manager/internal/storage"
@@ -9,7 +10,7 @@ import (
 )
 
 type DeleteChatRequest struct {
-	CreatorID uint64 `validate:"required, min=1"`
+	CreatorID uint64 `validate:"required,min=1"`
 	ChatID    uint64 `validate:"required"`
 }
 
@@ -18,34 +19,34 @@ func HandleDeleteChat(storage storage.Storage, msgPacketRequest *model.MessagePa
 	validator := validator.New()
 	if err := validator.Struct(req); err != nil {
 		logger.Error("failed to validate request", "error", err)
-		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: "Internal Error"}
+		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage(json.RawMessage("Internal Error"))}
 	}
 	uow, err := storage.CreateUnitOfWork()
 	if err != nil {
 		logger.Error("failed to create unit of work", "error", err)
-		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: "Internal Error"}
+		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage(json.RawMessage("Internal Error"))}
 	}
 	defer uow.Rollback()
 	chatRepo := uow.ChatRepository()
 	ownerId, err := chatRepo.GetOwnerID(req.ChatID)
 	if err != nil {
 		logger.Error("failed to get owner id", "error", err)
-		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: "Internal Error"}
+		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Internal Error")}
 	}
 	if ownerId != req.CreatorID {
 		logger.Error("user is not owner", "error", err)
-		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: "Internal Error"}
+		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Internal Error")}
 	}
 	err = chatRepo.DeleteChat(req.ChatID)
 	if err != nil {
 		logger.Error("failed to delete chat", "error", err)
-		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: "Internal Error"}
+		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Internal Error")}
 	}
 	err = uow.Commit()
 	if err != nil {
 		logger.Error("failed to commit unit of work", "error", err)
-		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: "Internal Error"}
+		return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Internal Error")}
 	}
 	logger.Info("chat deleted", "chat_id", req.ChatID)
-	return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: "Success"}
+	return &model.MessagePacketRequest{MsgType: model.DeleteChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Success")}
 }

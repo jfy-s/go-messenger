@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"sync"
@@ -54,6 +55,7 @@ func (h *Hub) Register(session *session.Session) error {
 func (h *Hub) Unregister(session *session.Session) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	h.connections[session.ID()].Conn().Close()
 	delete(h.connections, session.ID())
 }
 
@@ -64,6 +66,24 @@ func (h *Hub) HandleMessage(msg *model.MessagePacketRequest) {
 	case model.SendMessage:
 		ans := handlers.HandleSendMessage(h.storage, msg, h.logger.With("handler", "send_message", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
+		// TODO: refactor probably
+		if uow, err := h.storage.CreateUnitOfWork(); err == nil {
+			users, err := uow.ChatRepository().GetAllUsersIDInChat(msg.To)
+			defer uow.Rollback()
+			if err != nil {
+				return
+			}
+			for _, u := range users {
+				if u == msg.From {
+					continue
+				}
+				if _, ok := h.connections[u]; ok {
+					h.logger.Info("send message to another user in the chat", u)
+					getMessage := &model.MessagePacketRequest{MsgType: model.GetMessage, From: msg.From, To: msg.To, Data: ans.Data}
+					h.connections[u].Enqueue(getMessage)
+				}
+			}
+		}
 	case model.UpdateMessage:
 		ans := handlers.HandleUpdateMessage(h.storage, msg, h.logger.With("handler", "update_message", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
@@ -91,8 +111,11 @@ func (h *Hub) HandleMessage(msg *model.MessagePacketRequest) {
 	case model.GetAllUsersIDInChat:
 		ans := handlers.HandleGetLlUsersIDInChat(h.storage, msg, h.logger.With("handler", "get_all_users_id_in_chat", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
+	case model.GetAllUserChats:
+		ans := handlers.HandleGetAllUserChats(h.storage, msg, h.logger.With("handler", "get_all_user_chats", "from", msg.From))
+		h.connections[msg.From].Enqueue(ans)
 	default:
-		ans := &model.MessagePacketRequest{MsgType: model.SendMessage, From: 0, To: msg.From, Data: "Internal Error"}
+		ans := &model.MessagePacketRequest{MsgType: model.SendMessage, From: 0, To: msg.From, Data: json.RawMessage("Internal Error")}
 		h.connections[msg.From].Enqueue(ans)
 	}
 }

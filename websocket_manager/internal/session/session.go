@@ -43,6 +43,8 @@ type Hub interface {
 	HandleMessage(msg *model.MessagePacketRequest)
 }
 
+// Session
+// #TODO: fix problem when one user connect from different devices
 type Session struct {
 	hub  Hub
 	conn *websocket.Conn
@@ -128,7 +130,8 @@ func (s *Session) readPump() {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 					s.hub.Logger().Error("unexpected close", "error", err)
 				}
-				break
+				s.hub.Logger().Error("failed to read message", "error", err)
+				return
 			}
 			MessagePacketRequest, err := model.ByteToMessagePacketRequest(message)
 			if err != nil {

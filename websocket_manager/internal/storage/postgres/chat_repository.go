@@ -13,8 +13,30 @@ type ChatRepository struct {
 	logger *slog.Logger
 }
 
+func (repo *ChatRepository) GetAllUserChats(id uint64) ([]model.Chat, error) {
+	rows, err := repo.tx.Query(context.Background(), "SELECT chat_id, name, creator_id FROM chat_users JOIN chats ON chats.id = chat_id WHERE user_id = $1", id)
+	if err != nil {
+		repo.logger.Error("failed to get chat ids", "error", err)
+		return nil, err
+	}
+
+	chats := make([]model.Chat, rows.CommandTag().RowsAffected())
+	for rows.Next() {
+		var chat model.Chat
+		err = rows.Scan(&chat.ID, &chat.Name, &chat.CreatorID)
+		if err != nil {
+			repo.logger.Error("failed to scan chat", "error", err)
+			return nil, err
+		}
+
+		chats = append(chats, chat)
+	}
+
+	return chats, nil
+}
+
 func (repo *ChatRepository) CreateChat(chat *model.Chat) error {
-	err := repo.tx.QueryRow(context.Background(), "INSERT INTO chats (name) VALUES ($1) RETURNING id", chat.Name).Scan(&chat.ID)
+	err := repo.tx.QueryRow(context.Background(), "INSERT INTO chats (name, creator_id) VALUES ($1, $2) RETURNING id", chat.Name, chat.CreatorID).Scan(&chat.ID)
 	if err != nil {
 		repo.logger.Error("failed to create chat", "error", err)
 	}
@@ -69,6 +91,7 @@ func (repo *ChatRepository) GetAllUsersIDInChat(id uint64) ([]uint64, error) {
 		var id uint64
 		if err := rows.Scan(&id); err != nil {
 			repo.logger.Error("failed to scan user id", "error", err)
+			return nil, err
 		}
 		ids = append(ids, id)
 	}

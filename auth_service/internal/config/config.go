@@ -8,11 +8,11 @@ import (
 )
 
 type Config struct {
-	Hostname       string `yaml:"hostname" env:"HOSTNAME" required:"true" env-default:"localhost"`
+	Hostname       string `yaml:"hostname" required:"true" env-default:"localhost"`
 	Port           uint16 `yaml:"port" default:"52525"`
 	DatabaseUrl    string `yaml:"database_url" env:"DATABASE_URL" env-required:"true"`
-	PrivateKeyPath string `yaml:"private_key_path" env:"PRIVATE_KEY_PATH" env-required:"true"`
-	PublicKeyPath  string `yaml:"public_key_path" env:"PUBLIC_KEY_PATH" env-required:"true"`
+	PrivateKeyPath string `yaml:"private_key_path" env:"PRIVATE_KEY_PATH" required:"true"`
+	PublicKeyPath  string `yaml:"public_key_path" env:"PUBLIC_KEY_PATH" required:"true"`
 }
 
 func Load(configPath string) *Config {
