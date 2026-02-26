@@ -2,3 +2,7 @@
 /auth_service/config
 /websocket_manager/config
 /gateway/config
+*.exe
+*.sum
+*.mod
+.idea
