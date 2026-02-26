@@ -117,7 +117,7 @@ func (repo *ChatRepository) GetChatInfo(id uint64) (*model.Chat, []model.User, e
 		return nil, nil, err
 	}
 
-	rows, err := repo.tx.Query(context.Background(), "SELECT user_id, name FROM chat_users JOIN users ON user_id = users.id WHERE chat_id = $1", id)
+	rows, err := repo.tx.Query(context.Background(), "SELECT user_id, username FROM chat_users JOIN users ON user_id = users.id WHERE chat_id = $1", id)
 	if err != nil {
 		repo.logger.Error("failed to get chat info", "error", err)
 		return nil, nil, err
