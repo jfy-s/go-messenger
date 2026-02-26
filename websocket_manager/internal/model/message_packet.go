@@ -1,6 +1,8 @@
 package model
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type MsgType int
 
@@ -17,6 +19,11 @@ const (
 	DeleteUserFromChat
 	GetAllUsersIDInChat
 	GetAllUserChats
+)
+
+const (
+	Success       = `"Success"`
+	InternalError = `"InternalError"`
 )
 
 type MessagePacketRequest struct {

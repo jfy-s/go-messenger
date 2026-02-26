@@ -103,8 +103,19 @@ func (h *Hub) HandleMessage(msg *model.MessagePacketRequest) {
 		ans := handlers.HandleDeleteChat(h.storage, msg, h.logger.With("handler", "delete_chat", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
 	case model.AddUserToChat:
-		ans := handlers.HandleAddUserToChat(h.storage, msg, h.logger.With("handler", "add_user_to_chat", "from", msg.From))
+		ans, err := handlers.HandleAddUserToChat(h.storage, msg, h.logger.With("handler", "add_user_to_chat", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
+		if err != nil {
+			return
+		}
+
+		var userID uint64
+		_ = json.Unmarshal(msg.Data, &userID)
+		if _, ok := h.connections[userID]; ok {
+			answerToAnotherUser := &model.MessagePacketRequest{MsgType: model.AddUserToChat, From: msg.From, To: msg.To, Data: nil}
+			h.connections[userID].Enqueue(answerToAnotherUser)
+		}
+
 	case model.DeleteUserFromChat:
 		ans := handlers.HandleDeleteUserFromChat(h.storage, msg, h.logger.With("handler", "delete_user_from_chat", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
