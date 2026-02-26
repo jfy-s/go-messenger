@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:15
     ports:
-      - "5432:5432"
+      - "30432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: test
@@ -26,3 +26,40 @@ services:
     volumes:  
           - ./migrations:/migrations:ro
     restart: "no"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gateway-final
+    container_name: gateway
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    depends_on:
+      - auth
+      - websocket
+
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: auth-final
+    container_name: auth_service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    volumes:
+      - ./auth_service/config:/app/auth_service/config:ro
+
+  websocket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: websocket-final
+    container_name: websocket_manager
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    volumes:
+      - ./websocket_manager/config:/app/websocket_manager/config:ro

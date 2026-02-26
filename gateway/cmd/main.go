@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	authHttpBackendURL = "http://127.0.0.1:52521"
-	chatWSBackendURL   = "ws://127.0.0.1:52522/ws"
+	authHttpBackendURL = "http://auth:52521"
+	chatWSBackendURL   = "ws://websocket:52522/ws"
 )
 
 func newHTTPReverseProxy(target string) *httputil.ReverseProxy {
