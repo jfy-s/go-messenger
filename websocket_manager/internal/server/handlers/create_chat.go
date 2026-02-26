@@ -48,5 +48,6 @@ func HandleCreateChat(storage storage.Storage, msgPacketRequest *model.MessagePa
 		return &model.MessagePacketRequest{MsgType: model.CreateChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Internal Error")}
 	}
 	logger.Info("chat created", "chat_id", chat.ID)
-	return &model.MessagePacketRequest{MsgType: model.CreateChat, From: 0, To: msgPacketRequest.From, Data: json.RawMessage("Success")}
+	response, _ := json.Marshal(chat)
+	return &model.MessagePacketRequest{MsgType: model.CreateChat, From: 0, To: msgPacketRequest.From, Data: response}
 }
