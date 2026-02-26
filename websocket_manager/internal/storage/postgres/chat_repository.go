@@ -20,7 +20,7 @@ func (repo *ChatRepository) GetAllUserChats(id uint64) ([]model.Chat, error) {
 		return nil, err
 	}
 
-	chats := make([]model.Chat, rows.CommandTag().RowsAffected())
+	chats := make([]model.Chat, 0, rows.CommandTag().RowsAffected())
 	for rows.Next() {
 		var chat model.Chat
 		err = rows.Scan(&chat.ID, &chat.Name, &chat.CreatorID)
@@ -86,7 +86,7 @@ func (repo *ChatRepository) GetAllUsersIDInChat(id uint64) ([]uint64, error) {
 		repo.logger.Error("failed to get all users in chat", "error", err)
 	}
 
-	ids := make([]uint64, rows.CommandTag().RowsAffected())
+	ids := make([]uint64, 0, rows.CommandTag().RowsAffected())
 	for rows.Next() {
 		var id uint64
 		if err := rows.Scan(&id); err != nil {
@@ -104,6 +104,33 @@ func (repo *ChatRepository) GetOwnerID(id uint64) (uint64, error) {
 	err := repo.tx.QueryRow(context.Background(), "SELECT creator_id FROM chats WHERE id = $1", id).Scan(&ownerId)
 	if err != nil {
 		repo.logger.Error("failed to get owner id", "error", err)
+		return 0, err
 	}
 	return ownerId, nil
+}
+
+func (repo *ChatRepository) GetChatInfo(id uint64) (*model.Chat, []model.User, error) {
+	chat := &model.Chat{ID: id}
+	err := repo.tx.QueryRow(context.Background(), "SELECT name, creator_id FROM chats WHERE id = $1", id).Scan(&chat.Name, &chat.CreatorID)
+	if err != nil {
+		repo.logger.Error("failed to get chat info", "error", err)
+		return nil, nil, err
+	}
+
+	rows, err := repo.tx.Query(context.Background(), "SELECT user_id, name FROM chat_users JOIN users ON user_id = users.id WHERE chat_id = $1", id)
+	if err != nil {
+		repo.logger.Error("failed to get chat info", "error", err)
+		return nil, nil, err
+	}
+	users := make([]model.User, 0, rows.CommandTag().RowsAffected())
+	for rows.Next() {
+		var user model.User
+		if err := rows.Scan(&user.Id, &user.Name); err != nil {
+			repo.logger.Error("failed to scan user id", "error", err)
+			return nil, nil, err
+		}
+		users = append(users, user)
+	}
+
+	return chat, users, nil
 }
