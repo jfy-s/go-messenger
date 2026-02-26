@@ -19,6 +19,7 @@ const (
 	DeleteUserFromChat
 	GetAllUsersIDInChat
 	GetAllUserChats
+	GetChatInfo
 )
 
 const (

@@ -125,6 +125,9 @@ func (h *Hub) HandleMessage(msg *model.MessagePacketRequest) {
 	case model.GetAllUserChats:
 		ans := handlers.HandleGetAllUserChats(h.storage, msg, h.logger.With("handler", "get_all_user_chats", "from", msg.From))
 		h.connections[msg.From].Enqueue(ans)
+	case model.GetChatInfo:
+		ans := handlers.HandleGetChatInfo(h.storage, msg, h.logger.With("handler", "get_chat_info", "from", msg.From))
+		h.connections[msg.From].Enqueue(ans)
 	default:
 		ans := &model.MessagePacketRequest{MsgType: model.SendMessage, From: 0, To: msg.From, Data: json.RawMessage("Internal Error")}
 		h.connections[msg.From].Enqueue(ans)
