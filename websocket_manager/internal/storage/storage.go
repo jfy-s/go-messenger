@@ -23,6 +23,7 @@ type ChatRepository interface {
 	GetAllUsersIDInChat(id uint64) ([]uint64, error)
 	GetOwnerID(id uint64) (uint64, error)
 	GetAllUserChats(id uint64) ([]model.Chat, error)
+	GetChatInfo(id uint64) (*model.Chat, []model.User, error)
 }
 
 type MessageRepository interface {
