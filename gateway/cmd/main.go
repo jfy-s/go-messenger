@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var (
+const (
 	authHttpBackendURL = "http://auth:52521"
 	chatWSBackendURL   = "ws://websocket:52522/ws"
 )
